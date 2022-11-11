@@ -30,6 +30,7 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.3
+  provider: ^6.0.4
 
   mvc_pattern: ^7.0.0
 

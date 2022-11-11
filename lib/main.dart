@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_login_ui/screens/Info.dart';
-
+import './models/auth.dart';
 import 'package:http/http.dart';
+import 'package:provider/provider.dart';
 
 
 void main() {
@@ -17,22 +17,24 @@ class MyApp extends StatefulWidget {
 
   @override
   _MyAppState createState() => _MyAppState();
-
 }
 
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-          dividerColor: Colors.transparent
+    return ChangeNotifierProvider(
+        create: (context)=>Auth(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+            dividerColor: Colors.transparent
+        ),
+        routes: {
+          '/': (context) => Login(),
+          '/info': (context) => Info()
+        },
+        initialRoute: '/',
       ),
-      routes: {
-        '/': (context) => Login(),
-        '/info': (context) => Info()
-      },
-      initialRoute: '/',
     );
   }
 }
@@ -49,15 +51,16 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passController = TextEditingController();
-  void login(BuildContext context, String email, password) async{
+  void login(BuildContext context, Auth auth, String email, password) async{
     try{
-      var ur = "https://devapi.adscompass.ru/api/v1/auth/token?email=" + email + "&password=" + password;
+      var url = "https://devapi.adscompass.ru/api/v1/auth/token?email=" + email + "&password=" + password;
       Response response = await post(
-          Uri.parse(ur),
+          Uri.parse(url),
           headers: {
             'x-referer' : "https://dev.adscompass.ru",
           }
       );
+      print(response.statusCode);
       if(response.statusCode == 201){
         debugPrint('Login successfully');
         var data = jsonDecode(response.body.toString());
@@ -78,13 +81,8 @@ class _LoginState extends State<Login> {
           var id = data["data"]["id"];
           var email = data["data"]["email"];
           debugPrint(name.toString());
-          // Navigator.of(context).push(MaterialPageRoute(builder: (context) => InfoScreen()), );
-
-          Navigator.pushNamed(context, '/info',arguments: <String, String>{
-            'name': name,
-            'email': email,
-            'id': id.toString()
-          });
+          Navigator.pushNamed(context, "/info");
+          auth.setAuthData(name: name, email: email, id: id.toString());
 
         }
         else{
@@ -102,30 +100,30 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-
+    Auth auth = Provider.of<Auth>(context);
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.white,
         body: Padding(
-          padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 20.w),
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: 50.h,
+                  height: 50,
                 ),
                 Image.asset(
                   "assets/login.png",
-                  height: 250.h,
+                  height: 250,
                   width: double.infinity,
                 ),
                 SizedBox(
-                  height: 20.h,
+                  height: 20,
                 ),
                 Text(
                   "Email",
-                  style: TextStyle(fontSize: 12.sp),
+                  style: TextStyle(fontSize: 12),
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -144,12 +142,12 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 SizedBox(
-                  height: 20.h,
+                  height: 20,
                 ),
 
                 Text(
                   "Password",
-                  style: TextStyle(fontSize: 12.sp),
+                  style: TextStyle(fontSize: 12),
                 ),
                 Container(
                   decoration: BoxDecoration(
@@ -169,32 +167,32 @@ class _LoginState extends State<Login> {
                   ),
                 ),
                 SizedBox(
-                  height: 5.h,
+                  height: 5,
                 ),
 
                 SizedBox(
-                  height: 60.h,
+                  height: 60,
                 ),
                 MaterialButton(
                   color: Colors.red[800],
-                  height: 20.h,
+                  height: 20,
                   minWidth: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
                       side: const BorderSide(color: Colors.white)),
                   onPressed: () {
-                    login(context, emailController.text.toString(), passController.text.toString());
+                    login(context, auth,emailController.text.toString(), passController.text.toString());
 
                   },
                   child: Text(
                     "Login",
-                    style: TextStyle(color: Colors.white, fontSize: 20.sp),
+                    style: TextStyle(color: Colors.white, fontSize: 20),
                   ),
 
                 ),
                 SizedBox(
-                  height: 8.h,
+                  height: 8,
                 ),
               ],
             ),
