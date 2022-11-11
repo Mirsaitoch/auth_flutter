@@ -16,4 +16,13 @@ class Auth extends ChangeNotifier {
     };
     notifyListeners();
   }
+
+  wipeAuthData() {
+    auth_data = {
+      "name": "",
+      "email": "",
+      "id": ""
+    };
+    notifyListeners();
+  }
 }
